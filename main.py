@@ -44,7 +44,7 @@ def copy(client,path):
 
 
 @app.command()
-def ls(path):
+def ls(root):
     options = {
         'webdav_hostname': "",
         'webdav_login': "",
