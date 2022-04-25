@@ -1,0 +1,14 @@
+[WEBDAV]
+url = $URL
+username = $USERNAME
+password = $PASSWORD
+
+[BACKUP]
+destination = /opt/backup
+store = /opt/backup/store
+retention_days = 3
+entity = myEntity
+
+[LOGGER]
+logfile = var/logs/backup_webdav/backup.log
+formatter = sd

@@ -1,0 +1,5 @@
+
+
+
+class StoarageSizeQuotaRangeException(Exception):
+    pass
