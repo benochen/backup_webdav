@@ -30,9 +30,6 @@ def bye(name: Optional[str] = None):
 
 
 def copy(client,root,update,dest):
-
-    print("enter in method copy with path="+root)
-    print("update="+str(update))
     folders=client.list(root,get_info=True)
     print(folders)
     for file in folders:
@@ -43,7 +40,6 @@ def copy(client,root,update,dest):
             newRoot=root+"/"+endPath
             print("new root="+newRoot)
             if(  root.split("/")[len(root.split("/"))-1] != endPath):
-                print("HERE")
                 update= copy(client,newRoot,update,dest)
         else:
             destinationFolder=dest+os.path.sep+root.replace("/",os.path.sep)
@@ -54,11 +50,9 @@ def copy(client,root,update,dest):
             print("file "+remotePathStr+" will be copied in "+completeDestinationPath)
             try:
                 if( not os.path.isfile(completeDestinationPath)):
-                    print("File does not exist. I copy it")
                     client.download_sync(remote_path=remotePathStr, local_path=completeDestinationPath)
 
                 else:
-                    print("file Exist. skip")
                 update["number"] = update["number"] + 1
                 if file["size"]:
                     update["size"] = update["size"] + int(file["size"])
@@ -102,6 +96,7 @@ def backup(root: Optional[str] = None, entity: Optional[str]="default"):
         retention_day = config["BACKUP"]['retention_days']
         logger.info("Connection to %s succeed", config["WEBDAV"]['url'])
         logger.info("Start backup of %s to %s", root, dest)
+        capacity = client.computeDiskSize(dest)
         update = client.completeBackup(update, root, dest)
         logger.debug("root=%s",root)
         to_zip = dest + os.path.sep + root
@@ -109,7 +104,7 @@ def backup(root: Optional[str] = None, entity: Optional[str]="default"):
         logger.info("Backup  %s complete", root)
         logger.info("Copy of remote file completed in %s seconds ", (time.time() - start_time))
         logger.info("Check there is enough space to zip folder %s", to_zip)
-        storage_capacity = StorageCapacity("E:\\", to_zip, 0.9)
+        storage_capacity = StorageCapacity("/", to_zip, 0.9)
         dest_webdav_copy=dest + os.path.sep + root
         if (not storage_capacity.canFileBeingZipped()):
             logger.error("The storage does not contain enough space")
