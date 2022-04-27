@@ -102,8 +102,6 @@ def backup(root: Optional[str] = None, entity: Optional[str]="default"):
         retention_day = config["BACKUP"]['retention_days']
         logger.info("Connection to %s succeed", config["WEBDAV"]['url'])
         logger.info("Start backup of %s to %s", root, dest)
-        capacity = client.computeDiskSize(dest)
-        folderSize = client.computePathSize("E:\\")
         update = client.completeBackup(update, root, dest)
         logger.debug("root=%s",root)
         to_zip = dest + os.path.sep + root
