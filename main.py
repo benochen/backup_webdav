@@ -53,7 +53,7 @@ def copy(client,root,update,dest):
                     client.download_sync(remote_path=remotePathStr, local_path=completeDestinationPath)
 
                 else:
-                update["number"] = update["number"] + 1
+                 update["number"] = update["number"] + 1
                 if file["size"]:
                     update["size"] = update["size"] + int(file["size"])
             except WebDavException as exception:
@@ -104,7 +104,11 @@ def backup(root: Optional[str] = None, entity: Optional[str]="default"):
         logger.info("Backup  %s complete", root)
         logger.info("Copy of remote file completed in %s seconds ", (time.time() - start_time))
         logger.info("Check there is enough space to zip folder %s", to_zip)
-        storage_capacity = StorageCapacity("/", to_zip, 0.9)
+        if os.name == "posix":
+            storage_capacity = StorageCapacity("/", to_zip, 0.9)
+        else:
+            driveletter,path=os.path.splitdrive(os.getcwd())
+            storage_capacity = StorageCapacity(driveletter,to_zip,0.9)
         dest_webdav_copy=dest + os.path.sep + root
         if (not storage_capacity.canFileBeingZipped()):
             logger.error("The storage does not contain enough space")
