@@ -1,0 +1,13 @@
+{
+  "id": "234faazee-aaffeed-a12421123a",
+  "backup_type": "FULL",
+  "source_type": "WEBDAV",
+  "host": "kloud.kataku.in",
+   "root": "[MdC] Backup",
+  "size": 72,
+  "count": 675,
+  "store": "./234faazee-aaffeed-a12421123a.zip",
+  "created": "2020-07-25T14:10:26.113Z",
+  "expire" :"2020-08-25T14:10:26.113Z",
+   "status": "Active"
+}
