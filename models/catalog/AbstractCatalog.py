@@ -1,11 +1,15 @@
 from mongoengine import *
 from models.entities.Entity import Entity
 from models.catalog.Status import Status
-import TypeBackup
+from models.catalog.TypeBackup import SourceBackup
 
 class AbstractCatalog(Document):
+    meta = {
+        'abstract' : True,
+        'allow_inheritance': True
+    }
     host = StringField(required=True)
-    source_type=EnumField(TypeBackup)
+    source_type=EnumField(SourceBackup)
     entity=ReferenceField(Entity)
     root=StringField(require=True)
     size=IntField(required=True)

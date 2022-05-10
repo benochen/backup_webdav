@@ -1,10 +1,7 @@
 from mongoengine import *
 from models.entities.Entity import Entity
 from models.catalog.Status import Status
-import TypeBackup
-import AbstractCatalog
-
+from models.catalog.TypeBackup import SourceBackup
+from models.catalog.AbstractCatalog import AbstractCatalog
 class FullBackupCatalog(AbstractCatalog):
-    backup_type=StringField(TypeBackup.)
-    def __init__(self):
-        super.__init__()
+    backup_type=StringField(default="FULL")

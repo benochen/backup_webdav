@@ -2,6 +2,8 @@
 from models.users.group import Group
 from models.users.users import User
 from models.entities.Entity import Entity
+from models.catalog.FullBackupCatalog import FullBackupCatalog
+from datetime import datetime
 from mongoengine import *
 
 connect('backup_webdav')
@@ -16,8 +18,9 @@ g1.save()
 groups = list()
 groups.append(g1)
 
-s2 = Entity(name="MDC")
+s2 = Entity(name="MDC",read_group=[g1])
 s2.save()
 
-
-g1.delete()
+date=datetime.now()
+backup = FullBackupCatalog(host="http://www.test.com",entity=s2,root="[MDC]",size=500,store_zip="12345654ezfsqdsd.zip",hash_zip="eaef345532abcd45897",creation_time=date,expiration_time=date,status="ACTIVE")
+backup.save()

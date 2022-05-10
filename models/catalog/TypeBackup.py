@@ -1,3 +1,3 @@
 from enum import Enum
-class TypeNackup(Enum):
+class SourceBackup(Enum):
     WEBDAV = 'WEBDAV'
