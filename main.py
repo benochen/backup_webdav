@@ -74,8 +74,10 @@ def copy(client,root,update,dest):
 
 
 @app.command()
-def backup(root: Optional[str] = None, entity: Optional[str]="default"):
+def backup(root: Optional[str] = None, entity: Optional[str]="default",noclean: Optional[bool]=False,nozip: Optional[bool]=False,nocopy:Optional[bool]=False):
     try:
+
+        start_time_global=time.time()
         config = configparser.ConfigParser()
         config.read("config.ini")
         print("test")
@@ -98,7 +100,13 @@ def backup(root: Optional[str] = None, entity: Optional[str]="default"):
         logger.info("Connection to %s succeed", config["WEBDAV"]['url'])
         logger.info("Start backup of %s to %s", root, dest)
         capacity = client.computeDiskSize(dest)
-        update = client.completeBackup(update, root, dest)
+        if not nocopy:
+            logger.info("Remote copy will be performed as nocopy flag is set to False")
+            update = client.completeBackup(update, root, dest)
+        else:
+            logger.info("Remote Copy has not been performed as nocopy flag is set to True")
+        logger.info("Completion of WebDav copy Operation competed in %s seconds ", (time.time() - start_time))
+
         logger.debug("root=%s",root)
         to_zip = dest + os.path.sep + root
         logger.debug("to_zip=%s",to_zip)
@@ -106,21 +114,44 @@ def backup(root: Optional[str] = None, entity: Optional[str]="default"):
         logger.info("Copy of remote file completed in %s seconds ", (time.time() - start_time))
         logger.info("Check there is enough space to zip folder %s", to_zip)
         if os.name == "posix":
-            storage_capacity = StorageCapacity("/", to_zip, 0.9)
+            storage_capacity = StorageCapacity("/", to_zip, 0.10)
         else:
-            driveletter,path=os.path.splitdrive(os.getcwd())
-            storage_capacity = StorageCapacity(driveletter,to_zip,0.9)
+            logger.debug("Current path of dest is %s",dest)
+            driveletter,path=os.path.splitdrive(dest)
+            logger.debug("The computed driveletter is is %s", driveletter)
+            storage_capacity = StorageCapacity(driveletter,to_zip,0.10)
         dest_webdav_copy=dest + os.path.sep + root
         if (not storage_capacity.canFileBeingZipped()):
+            storage_capacity.displayZizeInGb()
+
             logger.error("The storage does not contain enough space")
-            exit()
+            logger.info("Trying to remove oldest backup")
+            cleaner=StorageCleaner(store,3)
+            logger.debug("We will clean %s ",store)
+            if cleaner.removeOldestFile() == False:
+                logger.error("Error when attempt to remove older file in %s",store)
+            else:
+                logger.info("Successfully remove oldest zip file in %s",store)
+            logger.info("Check if there is enough space to zip")
+            if not storage_capacity.canFileBeingZipped():
+                logger.info("Still not enough space to zip %s to %s",dest_webdav_copy,store)
+                exit();
         logger.info("Storage root contains enough space ")
         logger.info("Create zip from %s to %s ", dest_webdav_copy, root)
-        update = client.zip(dest_webdav_copy, root, update)
-        logger.info("size=%s Go", str(int(update["size"] / (1024 * 1024 * 1024))))
-        logger.info("number of files=%s", str(update["number"]))
-        logger.info("Creation of zip Operation competed in %s seconds ", (time.time() - start_time))
-        logger.info("In the store %s search for file older than %s days", store, retention_day)
+        start_time=time.time()
+        if not nozip:
+            logger.info("folder %s will be zipped as nozip flag is set to True",dest_webdav_copy)
+            update = client.zip(dest_webdav_copy, root, update)
+            logger.info("size=%s Go", str(int(update["size"] / (1024 * 1024 * 1024))))
+            logger.info("number of files=%s", str(update["number"]))
+            logger.info("Creation of zip Operation competed in %s seconds ", (time.time() - start_time))
+            logger.info("In the store %s search for file older than %s days", store, retention_day)
+        else:
+            logger.info("The folder %s will not be zipped as nozip flag is set to True",dest_webdav_copy)
+        if noclean:
+            logger.info("noclean flag enabled. %s will not be cleaned",store)
+            logger.info("The global backup process takes %s seconds", (time.time() - start_time_global))
+            exit()
         files_to_delete = list()
         cleaner = StorageCleaner(store, retention_day)
         files_to_delete = cleaner.search_by_age()
@@ -130,6 +161,7 @@ def backup(root: Optional[str] = None, entity: Optional[str]="default"):
         logger.info("Cleaning storage folder %s:",dest_webdav_copy)
         cleaner.delete_directory(dest_webdav_copy)
         logger.info("Cleaning of %s succeed",dest_webdav_copy)
+        logger.info("The global backup process takes %s seconds", (time.time() - start_time_global))
     except PermissionError as e:
         logger.error("Error when cleaning file. Reason=%s",str(e) )
     except Exception as e:

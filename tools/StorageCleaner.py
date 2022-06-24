@@ -3,10 +3,7 @@ import time
 from datetime import datetime,timedelta
 import shutil
 
-from Exceptions import EmptyListException
-from Exceptions.StorageSizeQuotaRangeException import StoarageSizeQuotaRangeException
-from Exceptions.NotANumberException import NotANumberException
-from logzero import logger, logfile
+from logzero import logger
 class StorageCleaner:
 
     def __init__(self,search_folder,age):
@@ -21,6 +18,31 @@ class StorageCleaner:
     def getAge(self):
         return self.age
 
+    def removeOldestFile(self):
+        if not os.path.exists(self.search_folder):
+            logger.error("%s does not exists", self.search_folder)
+            return False
+
+        logger.info("%s does  exists", self.search_folder)
+        os.chdir(self.search_folder)
+
+        files=sorted(os.listdir(os.getcwd()),key=os.path.getmtime)
+        if(len(files)<=1):
+            logger.error("No files to be removed in %s",self.search_folder)
+            return False
+        oldest=files[0]
+        logger.info("Attempt to remove %s",oldest)
+        os.remove(oldest)
+
+
+        if(os.path.exists(oldest)):
+            logger.error("Removal of %s failed",oldest)
+            return False
+        else:
+            logger.error("Remove of %s is sucessfull",oldest)
+            return True
+
+
     def search_by_age(self):
         files_to_delete=list()
         for path,dirs,files in os.walk(self.search_folder):
@@ -29,9 +51,6 @@ class StorageCleaner:
                 ctime=datetime.strptime(time.ctime(os.path.getctime(fp)),"%a %b %d %H:%M:%S %Y")
                 ctime_delta = ctime + timedelta(days=int(self.age)-1)
                 today=datetime.today()
-                logger.debug("ctime=%s", ctime)
-                logger.debug("ctime_delta=%s",ctime_delta)
-                logger.debug("today =%s",today)
                 if (today >=ctime_delta ):
                     logger.debug("%s older than %s",str(today),str(ctime_delta))
                     files_to_delete.append(fp)

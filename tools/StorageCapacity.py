@@ -3,6 +3,8 @@ import os.path
 import shutil
 from Exceptions.StorageSizeQuotaRangeException import StoarageSizeQuotaRangeException
 from Exceptions.NotANumberException import NotANumberException
+from logzero import logger
+
 class StorageCapacity:
 
     def __init__(self,storage_name,file_path,quota):
@@ -39,7 +41,8 @@ class StorageCapacity:
 
 
     def computeStorageSize(self):
-         self.storage_size,self.storage_used,self.storage_free =  shutil.disk_usage(self.storage_name)
+        logger.debug("The size of %s is %s",str(self.storage_name),str(shutil.disk_usage(self.storage_name)))
+        self.storage_size,self.storage_used,self.storage_free =  shutil.disk_usage(self.storage_name)
 
     def computePathSize(self):
         if(os.path.isfile(self.file_path)):
@@ -67,8 +70,29 @@ class StorageCapacity:
             self.file_size=self.computePathSize()
         if self.storage_size == -1 or self.storage_used == -1 or self.storage_free == -1:
             self.computeStorageSize()
+        logger.debug("%s-%s=%s",str(self.storage_free),str(self.storage_size),str(float(self.storage_free-self.file_size)))
+        if self.storage_free - self.file_size <=0:
+            logger.debug("%s-%s=%s",str(self.storage_free),str(self.storage_size),str(float(self.storage_free-self.file_size)))
+            logger.debug("storage_free - file_size is less or equals to zero. Abort")
+        else:
+            logger.info("The disk has a storage capacity of %s GB and can store a zip file of %s GB. Check if it will not exceed quota of %s %% ",str(self.getStorageSizeInGB()),str(self.getFileSizeInGB()),str(self.quota*100))
+            if float(self.storage_free-self.file_size) <= (self.storage_free*self.quota):
+                logger.debug("Enough space to zip but the file zip will exit quoata abort;")
+            else:
+                logger.info("Quota is ok")
+                logger.debug("It will remain %s GB after the zip is created",str((self.storage_free-self.file_size)/(1024*1024*1024)))
+        return  float(self.storage_free-self.file_size>0) and float(self.storage_free-self.file_size) >= (self.storage_free*self.quota)
 
+    def getFileSizeInGB(self):
         print(self.file_size)
-        return  float(str(self.file_size)) <= self.storage_free * self.quota
+        return self.file_size/( 1024*1024*1024)
 
+    def getStorageSizeInGB(self):
+        return self.storage_size/(1024*1024*1024)
+
+    def getFreeStorageInGb(self):
+        return self.storage_free/(1024*1024*1024)
+
+    def displayZizeInGb(self):
+        logger.debug("file_size="+str(self.getFileSizeInGB())+";storage_size="+str(self.getStorageSizeInGB())+";storage_free="+str(self.getFreeStorageInGb()))
 
