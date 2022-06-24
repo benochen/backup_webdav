@@ -7,7 +7,7 @@ import shutil
 from webdav3.client import Client
 from webdav3.exceptions import WebDavException
 from logzero import logger, logfile
-
+import zipfile
 
 class WebDavWorker:
 
@@ -30,9 +30,60 @@ class WebDavWorker:
         capacity['total'],capacity['used'],capacity['free'] = shutil.disk_usage(path)
         return capacity
 
+    def listFileToZip(self,source):
+        logger.debug("Start listing file in %s to be zipped",source)
+        if not source:
+            logger.error("Error with sources")
+            return []
+
+        if os.path.exists(source):
+            logger.error("%s does not exists",source)
+        logger.debug("Check done. Start listing")
+        files = []
+        # r=root, d=directories, f = files
+        for r, d, f in os.walk(source):
+            for file in f:
+                files.append(os.path.join(d, file))
+
+        return files
+
 
     def computePathSize(self,path):
         return os.scandir(path)
+
+
+    def zipFile(self,sources,destname,update):
+        logger.debug("Start zip files")
+        logger.debug("Zipping folder %s",destname)
+
+        if( not destname):
+            return False
+
+        if(not sources):
+            return False
+
+        if(not os.path.exists(self.root_archive)):
+            os.mkdir(self.root_archive)
+        now=datetime.today().strftime("%Y%m%d%H%M%S")
+        final_dest_directory= self.root_archive+os.path.sep+self.entity
+        if not os.path.exists(final_dest_directory):
+            os.makedirs(final_dest_directory)
+        archive_path=final_dest_directory+os.path.sep+now+'_'+destname+".zip"
+        update["archive_path"] = archive_path
+        logger.debug("Start zip process")
+        i=1
+        size=len(sources)
+        logger.debug("%s files will be zipped",size)
+        with zipfile.ZipFile(archive_path,"w") as zf:
+            for file in sources:
+               logger.debug("Zip operation completed at %s %%",str(int((i/size)*100)))
+               zf.write(file)
+               i=i+1
+        return update
+
+
+
+
 
     def zip(self,source,destname,update):
         if( not destname):
