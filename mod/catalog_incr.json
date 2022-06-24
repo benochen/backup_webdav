@@ -1,0 +1,15 @@
+{
+  "id": "534faazee-aaffeed-a124211232",
+  "id_full": "234faazee-aaffeed-a12421123a",
+  "entity": "MDC",
+  "backup_type": "INCREMENTAL",
+  "source_type": "WEBDAV",
+  "host": "my.hotst.int.bchenal.org",
+  "root": "entity1",
+  "size": 72,
+  "count": 675,
+  "start_at": "2020-07-25T14:10:26.113Z",
+  "end_at": "2020-07-25T18:10:26.113",
+  "expire" :"2020-08-25T14:10:26.113Z",
+   "status": "Active"
+}

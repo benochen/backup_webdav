@@ -80,6 +80,7 @@ def backup(root: Optional[str] = None, entity: Optional[str]="default",noclean: 
         start_time_global=time.time()
         config = configparser.ConfigParser()
         config.read("config.ini")
+        print("test")
         start_time = time.time()
         update = dict()
         dest = config["BACKUP"]['destination']
