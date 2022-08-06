@@ -1,4 +1,7 @@
 from typing import Optional
+from models.users.group import Group
+from models.users.users import User
+from models.entities.Entity import Entity
 import os
 import time
 import typer
@@ -9,17 +12,57 @@ from tools.StorageCleaner import StorageCleaner
 from workers.WebdavWorker import WebDavWorker
 from webdav3.exceptions import WebDavException
 from logzero import logger, logfile
+from mongoengine import *
 import json
+
+
 app = typer.Typer()
 
 
-@app.command()
-def hello(name: Optional[str] = None):
-    if name:
-        typer.echo(f"Hello {name}")
-    else:
-        typer.echo("Hello World!")
 
+
+def initEntity(name,group):
+    connect('backup_webdav')
+    entity = Entity.objects(name=name)
+    if entity is None:
+        try:
+            groups=list()
+            groups.add(group)
+            entity=Entity(name=name,read_group=groups)
+            entity.save()
+        except Exception:
+            return None;
+        finally:
+            disconnect('backup_webdav')
+    return entity
+
+def initUser(username,lastname,givenname):
+    connect('backup_webdav')
+    user=User.objects(username=username)
+    if user is None:
+        try:
+            user=User(username=username,last_name=lastname,given_name=givenname)
+            user.save()
+        except Exception:
+            return None;
+        finally:
+            disconnect('backup_webdav')
+    return user
+
+def initGroup(name,user):
+    connect('backup_webdav')
+    group=Group.objects(name=name)
+    if group is None:
+        try:
+            members=list()
+            members.append(user)
+            group=Group(name=name,members=members)
+            group.save()
+        except Exception:
+            return None;
+        finally:
+            disconnect('backup_webdav')
+    return group
 
 @app.command()
 def bye(name: Optional[str] = None):
@@ -30,6 +73,12 @@ def bye(name: Optional[str] = None):
 
 
 def copy(client,root,update,dest):
+
+    user = initUser("benochen", "Chenal", "Benoit")
+    group = initGroup("admin", user)
+    entity = initEntity("MDC", user)
+
+    exit()
     folders=client.list(root,get_info=True)
     print(folders)
     for file in folders:
@@ -67,9 +116,6 @@ def copy(client,root,update,dest):
 
 
     return update
-
-
-
 
 
 
