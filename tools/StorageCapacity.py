@@ -74,10 +74,12 @@ class StorageCapacity:
         if self.storage_free - self.file_size <=0:
             logger.debug("%s-%s=%s",str(self.storage_free),str(self.storage_size),str(float(self.storage_free-self.file_size)))
             logger.debug("storage_free - file_size is less or equals to zero. Abort")
+            return False
         else:
             logger.info("The disk has a storage capacity of %s GB and can store a zip file of %s GB. Check if it will not exceed quota of %s %% ",str(self.getStorageSizeInGB()),str(self.getFileSizeInGB()),str(self.quota*100))
             if float(self.storage_free-self.file_size) <= (self.storage_free*self.quota):
                 logger.debug("Enough space to zip but the file zip will exit quoata abort;")
+                return False
             else:
                 logger.info("Quota is ok")
                 logger.debug("It will remain %s GB after the zip is created",str((self.storage_free-self.file_size)/(1024*1024*1024)))

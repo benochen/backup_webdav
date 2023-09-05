@@ -1,0 +1,6 @@
+q: I need to create an Web API in Python to query the FullbackupCatalog. help ?
+q: any idea how to do it ? I need to create an Web API in Python to query the FullbackupCatalog. help ?
+a: I don't know Python, but I would think that you could use the REST API to do this.  You can use the REST API to query the FullbackupCatalog.  You can find the REST API documentation here: https://www.druva.com/docs/insync/restapi/1.0.0/  You can find the documentation for the FullbackupCatalog here: https://www.druva.com/docs/insync/restapi/1.0.0/FullBackupCatalog.html
+q: Example ?
+a: I don't have an example, but I would think that you could use the REST API to do this.  You can use the REST API to query the FullbackupCatalog.  You can find the REST API documentation here: https://www.druva.com/docs/insync/restapi/1.0.0/  You can find the documentation for the FullbackupCatalog here: https://www.druva.com/docs/insync/restapi/1.0.0/FullBackupCatalog.html
+a:

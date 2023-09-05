@@ -2,6 +2,8 @@ from mongoengine import *
 from models.entities.Entity import Entity
 from models.catalog.Status import Status
 from models.catalog.TypeBackup import SourceBackup
+from models.catalog.ItemCatalog import ItemCatalog
+import json
 
 class AbstractCatalog(Document):
     meta = {
@@ -19,4 +21,10 @@ class AbstractCatalog(Document):
     start_at=DateTimeField(required=True)
     end_at = DateTimeField(required=True)
     expiration_time=DateTimeField(required=True)
+    files=ListField(EmbeddedDocumentField(ItemCatalog))
     status=EnumField(Status)
+
+
+
+    def toJson(self):
+        return json.dumps(self, default=lambda o: o.__dict__)
