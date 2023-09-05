@@ -1,5 +1,8 @@
 import logzero
 from typing import Optional
+from models.users.group import Group
+from models.users.users import User
+from models.entities.Entity import Entity
 import os
 import time
 from datetime import datetime
@@ -20,19 +23,62 @@ from tools.stat import Stat
 from logger.MyloggerJson import JSONLogger
 from webdav3.exceptions import WebDavException
 from logzero import logger, logfile
+<<<<<<< HEAD
 from ErrorCode.ErrorCode import StatusCodes
 from mongoengine import *
+=======
+from mongoengine import *
+import json
+
+>>>>>>> df64b5d2c731de370dd941f9dc005594130b002a
 
 app = typer.Typer()
 
 
-@app.command()
-def hello(name: Optional[str] = None):
-    if name:
-        typer.echo(f"Hello {name}")
-    else:
-        typer.echo("Hello World!")
 
+
+def initEntity(name,group):
+    connect('backup_webdav')
+    entity = Entity.objects(name=name)
+    if entity is None:
+        try:
+            groups=list()
+            groups.add(group)
+            entity=Entity(name=name,read_group=groups)
+            entity.save()
+        except Exception:
+            return None;
+        finally:
+            disconnect('backup_webdav')
+    return entity
+
+def initUser(username,lastname,givenname):
+    connect('backup_webdav')
+    user=User.objects(username=username)
+    if user is None:
+        try:
+            user=User(username=username,last_name=lastname,given_name=givenname)
+            user.save()
+        except Exception:
+            return None;
+        finally:
+            disconnect('backup_webdav')
+    return user
+
+def initGroup(name,user):
+    connect('backup_webdav')
+    group=Group.objects(name=name)
+    if group is None:
+        try:
+            members=list()
+            members.append(user)
+            group=Group(name=name,members=members)
+            group.save()
+        except Exception:
+            return None;
+        finally:
+            disconnect('backup_webdav')
+    return group
 
 @app.command()
 def bye(name: Optional[str] = None):
@@ -43,6 +89,12 @@ def bye(name: Optional[str] = None):
 
 
 def copy(client,root,update,dest):
+
+    user = initUser("benochen", "Chenal", "Benoit")
+    group = initGroup("admin", user)
+    entity = initEntity("MDC", user)
+
+    exit()
     folders=client.list(root,get_info=True)
     print(folders)
     for file in folders:
@@ -225,9 +277,6 @@ def backup_catalog(root: Optional[str] = None, entity: Optional[str]="default",n
 
     except ServerSelectionTimeoutError as e:
             mylogger.error("Cannnot connect to mongoDB","",StatusCodes.SERVICE_UNAVAILABLE.value)
-
-
-
 
 @app.command()
 def backup(root: Optional[str] = None, entity: Optional[str]="default",noclean: Optional[bool]=False,nozip: Optional[bool]=False,nocopy:Optional[bool]=False):
